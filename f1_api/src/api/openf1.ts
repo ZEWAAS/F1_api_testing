@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_OPENF1_API_URL;
+// Wir nutzen jetzt den Vite-Proxy für lokale Anfragen, um den CORS-Fehler zu umgehen!
+const API_BASE_URL = '/api';
 
 export const f1Api = axios.create({
   baseURL: API_BASE_URL,
