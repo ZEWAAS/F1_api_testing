@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from 'react';
 const TRACK_FILES: Record<string, string> = {
   "Sakhir": "bh-2004.geojson",
   "Jeddah": "sa-2021.geojson",
-  "Melbourne": "au-1953.geojson",
+  "Melbourne": "au-1996.geojson",
   "Suzuka": "jp-1962.geojson",
   "Shanghai": "cn-2004.geojson",
   "Miami": "us-2022.geojson",
@@ -31,12 +31,11 @@ interface Point { x: number; y: number; }
 
 interface TrackMapProps {
   locationName?: string; 
-  selectedDrivers?: any[]; // Neu: Wir empfangen die echten Fahrer-Daten
+  selectedDrivers?: any[];
 }
 
 export default function TrackMap({ locationName, selectedDrivers = [] }: TrackMapProps) {
   const [trackPoints, setTrackPoints] = useState<Point[]>([]);
-  const [hoveredDriver, setHoveredDriver] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -60,7 +59,7 @@ export default function TrackMap({ locationName, selectedDrivers = [] }: TrackMa
           coords = coords[0];
         }
 
-        const points = coords.map((c: number[]) => ({ x: c[0], y: c[1] }));
+        const points = coords.map((c: number[]) => ({ x: c[0], y: -c[1] }));
         setTrackPoints(points);
       } catch (err) {
         console.error(`Fehler beim Laden der Strecke für ${locationName}:`, err);
@@ -108,8 +107,7 @@ export default function TrackMap({ locationName, selectedDrivers = [] }: TrackMa
 
   const trackPath = trackPoints.map(p => `${p.x},${p.y}`).join(' ');
 
- const mapCars = selectedDrivers.map((driver) => {
-    // Ein kleiner Mathe-Trick: Startnummer * 37 % 100 ergibt immer denselben, gut verteilten Prozentwert (0.00 bis 0.99)
+  const mapCars = selectedDrivers.map((driver) => {
     const consistentPercentage = (driver.driver_number * 37 % 100) / 100;
     const pointIndex = Math.floor(trackPoints.length * consistentPercentage);
     const trackPoint = trackPoints[pointIndex] || { x: 0, y: 0 };
@@ -122,84 +120,58 @@ export default function TrackMap({ locationName, selectedDrivers = [] }: TrackMa
     };
   });
 
-  const sortedCars = [...mapCars].sort((a, b) => {
-    if (a.num === hoveredDriver) return 1;
-    if (b.num === hoveredDriver) return -1;
-    return 0;
-  });
-
   const strokeWidth = viewBoxInfo.width * 0.015;
-  const baseRadius = viewBoxInfo.width * 0.02;
+  // Kreis ist wieder klein
+  const circleRadius = viewBoxInfo.width * 0.02; 
+  // Schriftgröße angepasst, damit sie in den kleinen Kreis passt
+  const fontSize = viewBoxInfo.width * 0.02;      
 
-return (
-    <div className="flex w-full flex-col items-center rounded-xl border border-slate-800 bg-slate-950/80 p-6">
-      <svg
-        viewBox={viewBoxInfo.viewBoxString}
-        className="h-full w-full max-h-[600px]"
-        // overflow-visible verhindert, dass SVG-Filter die Größe der gesamten Box neu berechnen
-        style={{ transform: 'scaleY(-1)', overflow: 'visible' }} 
-      >
-        <polyline
-          points={trackPath}
-          fill="none"
-          stroke="#475569"
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+  return (
+    // 'aspect-video' entfernt, um die Höhe wieder komplett freizugeben
+    <div className="flex w-full h-full min-h-[400px] flex-col items-center rounded-xl border border-slate-800 bg-slate-950/80 p-6">
+      <div className="relative w-full h-full flex items-center justify-center">
+        <svg
+          viewBox={viewBoxInfo.viewBoxString}
+          className="absolute inset-0 w-full h-full"
+        >
+          {/* Die Strecke */}
+          <polyline
+            points={trackPath}
+            fill="none"
+            stroke="#475569"
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
 
-        {sortedCars.map((car) => {
-          const isHovered = hoveredDriver === car.num;
-
-          return (
+          {/* Die Autos */}
+          {mapCars.map((car) => (
             <g
               key={car.num}
               transform={`translate(${car.x}, ${car.y})`}
-              onMouseEnter={() => setHoveredDriver(car.num)}
-              onMouseLeave={() => setHoveredDriver(null)}
-              className="cursor-pointer"
             >
               <circle
-                r={isHovered ? baseRadius * 1.5 : baseRadius}
+                r={circleRadius}
                 fill={car.color}
-                stroke={isHovered ? "white" : "rgba(255,255,255,0.2)"}
-                strokeWidth={isHovered ? strokeWidth * 0.3 : strokeWidth * 0.2}
-                className="transition-all duration-200 ease-in-out"
+                stroke="rgba(255,255,255,0.2)"
+                strokeWidth={strokeWidth * 0.2}
               />
-
-              {isHovered && (
-                <>
-                  {/* Der pulsierende Hintergrundkreis MUSS pointer-events: none haben */}
-                  <circle 
-                    r={baseRadius * 3} 
-                    fill={car.color} 
-                    className="animate-pulse" 
-                    opacity="0.3" 
-                    style={{ pointerEvents: 'none' }} 
-                  />
-                  
-                  {/* Text-Element OHNE SVG-filter Attribut, das war der Verursacher des Layout-Sprungs! */}
-                  <text
-                    fill="white"
-                    fontSize={baseRadius * 1.5}
-                    fontWeight="bold"
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    // Wir nutzen stattdessen einen reinen CSS-Schatten, das ist viel stabiler in SVGs
-                    style={{ 
-                      transform: 'scaleY(-1)', 
-                      pointerEvents: 'none',
-                      textShadow: '0px 0px 10px rgba(0,0,0,0.9)'
-                    }} 
-                  >
-                    {car.num}
-                  </text>
-                </>
-              )}
+              
+              {/* Nummern sind wieder da, passend skaliert */}
+              <text
+                fill="white"
+                fontSize={fontSize}
+                fontWeight="bold"
+                textAnchor="middle"
+                dominantBaseline="central"
+                style={{ pointerEvents: 'none' }} 
+              >
+                {car.num}
+              </text>
             </g>
-          );
-        })}
-      </svg>
+          ))}
+        </svg>
+      </div>
     </div>
   );
 }

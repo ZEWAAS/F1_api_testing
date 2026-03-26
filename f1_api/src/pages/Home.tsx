@@ -28,17 +28,41 @@ export default function Home() {
         }
       } catch (error) {
         console.error('Fehler beim Laden der API-Daten (Server evtl. down):', error);
+        // --- FALLBACK 2026 GRID: Wenn die OpenF1 API down ist ---
+        console.log("Nutze 2026 Fallback-Fahrerdaten, damit die UI weiter funktioniert.");
         setAllDrivers([
+          // Red Bull Racing
           { driver_number: 1, name_acronym: 'VER', team_name: 'Red Bull Racing', team_colour: '3671C6' },
-          { driver_number: 11, name_acronym: 'PER', team_name: 'Red Bull Racing', team_colour: '3671C6' },
+          { driver_number: 6, name_acronym: 'HAD', team_name: 'Red Bull Racing', team_colour: '3671C6' },
+          // Ferrari
           { driver_number: 16, name_acronym: 'LEC', team_name: 'Ferrari', team_colour: 'E80020' },
-          { driver_number: 55, name_acronym: 'SAI', team_name: 'Ferrari', team_colour: 'E80020' },
+          { driver_number: 44, name_acronym: 'HAM', team_name: 'Ferrari', team_colour: 'E80020' },
+          // McLaren
           { driver_number: 4, name_acronym: 'NOR', team_name: 'McLaren', team_colour: 'FF8000' },
           { driver_number: 81, name_acronym: 'PIA', team_name: 'McLaren', team_colour: 'FF8000' },
-          { driver_number: 44, name_acronym: 'HAM', team_name: 'Mercedes', team_colour: '27F4D2' },
+          // Mercedes
           { driver_number: 63, name_acronym: 'RUS', team_name: 'Mercedes', team_colour: '27F4D2' },
+          { driver_number: 12, name_acronym: 'ANT', team_name: 'Mercedes', team_colour: '27F4D2' },
+          // Audi (Neues Werksteam)
+          { driver_number: 27, name_acronym: 'HUL', team_name: 'Audi', team_colour: 'F60000' },
+          { driver_number: 5, name_acronym: 'BOR', team_name: 'Audi', team_colour: 'F60000' },
+          // Williams
+          { driver_number: 55, name_acronym: 'SAI', team_name: 'Williams', team_colour: '64C4FF' },
+          { driver_number: 23, name_acronym: 'ALB', team_name: 'Williams', team_colour: '64C4FF' },
+          // Aston Martin
           { driver_number: 14, name_acronym: 'ALO', team_name: 'Aston Martin', team_colour: '229971' },
-          { driver_number: 10, name_acronym: 'GAS', team_name: 'Alpine', team_colour: '0093cc' },
+          { driver_number: 18, name_acronym: 'STR', team_name: 'Aston Martin', team_colour: '229971' },
+          // Alpine
+          { driver_number: 10, name_acronym: 'GAS', team_name: 'Alpine', team_colour: 'FF87BC' },
+          { driver_number: 3, name_acronym: 'DOO', team_name: 'Alpine', team_colour: 'FF87BC' },
+          // Haas
+          { driver_number: 31, name_acronym: 'OCO', team_name: 'Haas', team_colour: 'B6BABD' },
+          { driver_number: 87, name_acronym: 'BEA', team_name: 'Haas', team_colour: 'B6BABD' },
+          // Racing Bulls (VCARB)
+          { driver_number: 22, name_acronym: 'TSU', team_name: 'Racing Bulls', team_colour: '6692FF' },
+          { driver_number: 30, name_acronym: 'LAW', team_name: 'Racing Bulls', team_colour: '6692FF' },
+          // Cadillac (11. Team!)
+          { driver_number: 11, name_acronym: 'PER', team_name: 'Cadillac', team_colour: 'A6A6A6' }
         ]);
         
         // Damit wir zumindest ein Rennen in der Kopfzeile sehen:
